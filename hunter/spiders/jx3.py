@@ -1,9 +1,5 @@
 import scrapy
-import requests
 import json
-import time
-import sys
-import random
 from ..items import jx3Item
 from ..settings import ACCOUNT_API
 from datetime import datetime
@@ -54,6 +50,6 @@ class Jx3Spider(scrapy.Spider):
             item['info'] = i['info']
             item['account_type'] = i['account_type']
 
-            item["update_at"] = datetime.now()
+            item["update_at"] = datetime.utcnow()
 
             yield item

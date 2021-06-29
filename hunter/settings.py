@@ -12,10 +12,13 @@ BOT_NAME = 'hunter'
 SPIDER_MODULES = ['hunter.spiders']
 NEWSPIDER_MODULE = 'hunter.spiders'
 
-APPEARANCE = True  # 外观
-ADVENTURE = True  # 奇遇
+APPEARANCE = False  # 外观
+# APPEARANCE = True  # 外观
+ADVENTURE = False  # 奇遇
+# ADVENTURE = True  # 奇遇
 EQUIPMENT = False  # 装备
-PET = True  # 宠物
+# PET = True  # 宠物
+PET = False  # 宠物
 HOMELAND = False  # 家园
 OTHER = False  # 其它
 BASE = False  # base
@@ -29,7 +32,6 @@ ORDER_ID = '981070055496592'
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
 REDIS_DB = 0
-PROXY_ENABLED = True
 PROXY_KEY = 'PROXY_IPS'
 COOKIE_KEY = 'COOKIES'
 
@@ -50,7 +52,7 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 16
+CONCURRENT_REQUESTS = 6
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -58,7 +60,7 @@ CONCURRENT_REQUESTS = 16
 DOWNLOAD_DELAY = 0
 DOWNLOAD_TIMEOUT = 20
 # The download delay setting will honor only one of:
-CONCURRENT_REQUESTS_PER_DOMAIN = 100
+CONCURRENT_REQUESTS_PER_DOMAIN = 10
 # CONCURRENT_REQUESTS_PER_IP = 5
 
 # Disable cookies (enabled by default)

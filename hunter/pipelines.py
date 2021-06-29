@@ -5,17 +5,12 @@
 import pymongo
 import requests
 import json
-import redis
 import time
 from datetime import datetime
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
-from .middlewares import get_proxy_ip
-
-
-from .settings import MONGO_COLLECTION, MONGO_DB, MONGO_URL, REDIS_HOST, REDIS_DB, REDIS_PORT, COOKIE_KEY, DELAY, DOWNLOAD_TIMEOUT
-
-info_list = []
+from .common import get_proxy_ip, get_cookie, get_user_agent
+from .settings import MONGO_COLLECTION, MONGO_DB, MONGO_URL, DELAY, DOWNLOAD_TIMEOUT
 
 
 class HunterPipeline(object):
@@ -23,18 +18,12 @@ class HunterPipeline(object):
         self.client = pymongo.MongoClient(MONGO_URL)
         self.db = self.client[MONGO_DB]
         self.mongo = self.db[MONGO_COLLECTION]
-        self.red = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
-
-    def get_cookie(self):
-        return self.red.srandmember(COOKIE_KEY)
 
     def item_isExist(self, item):
-        count = self.mongo.find(
+        return self.mongo.find(
             {"consignment_id": item['consignment_id'], "info": item["info"]}).count()
-        return count
 
     def process_item(self, item, spider):
-        global info_list
         additional_keys = [
             {"key": "role_base_info", "enabled": spider.settings.get(
                 'BASE'), "func": self.base_info},  # 基础信息
@@ -55,33 +44,35 @@ class HunterPipeline(object):
         for additional_key in additional_keys:
             retry = 0
             while True:
+                # 降速
+                time.sleep(DELAY)
+
                 try:
+                    # 监测是否开启获取详细信息
                     if not additional_key['enabled']:
                         break
-                    time.sleep(DELAY)
 
-                    if spider.settings.get("PROXY_ENABLED") or self.red.exists("PROXY_ENABLED"):
+                    headers = spider.settings.get('DEFAULT_REQUEST_HEADERS')
+                    headers['cookie'] = get_cookie()
+                    headers['user-agent'] = get_user_agent()
+                    proxy_ip = get_proxy_ip()
 
-                        proxy_ip = get_proxy_ip()
+                    if proxy_ip:
                         proxies = {
                             "http": "http://%(proxy)s/" % {"proxy": proxy_ip},
                             "https": "http://%(proxy)s/" % {"proxy": proxy_ip}
                         }
                         print('使用代理IP {} 伪装请求...'.format(proxy_ip))
-                        headers = spider.settings.get(
-                            'DEFAULT_REQUEST_HEADERS')
-                        headers['cookie'] = self.get_cookie()
                         response = requests.get(spider.settings.get("DETAIL_API").format(
                             item['consignment_id'], additional_key["key"]), headers=headers, proxies=proxies, timeout=DOWNLOAD_TIMEOUT)
                     else:
-                        headers = spider.settings.get(
-                            'DEFAULT_REQUEST_HEADERS')
-                        headers['cookie'] = self.get_cookie()
                         response = requests.get(spider.settings.get("DETAIL_API").format(
                             item['consignment_id'], additional_key["key"]), headers=headers, timeout=DOWNLOAD_TIMEOUT)
+
                     result = json.loads(
                         response.content.decode().lstrip('__xfe48(').rstrip(');'))
                     print(result.get("msg"))
+
                     item = additional_key["func"](result, item)
                     break
                 except Exception as err:
@@ -91,24 +82,12 @@ class HunterPipeline(object):
                     print("获取 {} {} 信息失败..., 开始第{}次重试...".format(
                         item["info"], additional_key['key'], retry))
 
-        print(item)
-
         if not self.item_isExist(item):
-            info_list.append(item)
-            if len(info_list) > 0:
-                response = self.mongo.insert_many(info_list)
-                if response:
-                    print("数据入库成功!")
-                    info_list = []
-                else:
-                    print("数据入库失败!")
+            print(self.mongo.insert_one(item))
         else:
-            response = self.mongo.update_one(
-                {"consignment_id": item['consignment_id'], "info": item["info"]}, {"$set": item})
-            if response:
-                print("用户信息更新成功!")
-            else:
-                print("用户信息更新失败")
+            print(self.mongo.update_one(
+                {"consignment_id": item['consignment_id'], "info": item["info"]}, {"$set": item}))
+        print(item)
 
     def base_info(self, result, item):
         print("获取用户基础信息...")
