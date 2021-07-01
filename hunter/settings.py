@@ -12,13 +12,14 @@ BOT_NAME = 'hunter'
 SPIDER_MODULES = ['hunter.spiders']
 NEWSPIDER_MODULE = 'hunter.spiders'
 
-APPEARANCE = False  # 外观
-# APPEARANCE = True  # 外观
-ADVENTURE = False  # 奇遇
-# ADVENTURE = True  # 奇遇
-EQUIPMENT = False  # 装备
-# PET = True  # 宠物
-PET = False  # 宠物
+# PET = False  # 宠物
+# APPEARANCE = False  # 外观
+# ADVENTURE = False  # 奇遇
+# EQUIPMENT = False  # 装备
+
+APPEARANCE = True  # 外观
+ADVENTURE = True  # 奇遇
+PET = True  # 宠物
 HOMELAND = False  # 家园
 OTHER = False  # 其它
 BASE = False  # base
@@ -32,6 +33,7 @@ ORDER_ID = '981070055496592'
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
 REDIS_DB = 0
+PROXY_ENABLED = True
 PROXY_KEY = 'PROXY_IPS'
 COOKIE_KEY = 'COOKIES'
 

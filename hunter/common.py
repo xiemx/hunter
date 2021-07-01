@@ -18,7 +18,7 @@ def get_user_agent():
     return random.choice(CUSTOM_USER_AGENT)
 
 
-def get_cookie(self):
+def get_cookie():
     return red.srandmember(COOKIE_KEY)
 
 

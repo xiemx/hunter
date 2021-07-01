@@ -81,6 +81,7 @@ class HunterPipeline(object):
                         break
                     print("获取 {} {} 信息失败..., 开始第{}次重试...".format(
                         item["info"], additional_key['key'], retry))
+                    print(err)
 
         if not self.item_isExist(item):
             print(self.mongo.insert_one(item))
@@ -91,12 +92,12 @@ class HunterPipeline(object):
 
     def base_info(self, result, item):
         print("获取用户基础信息...")
-        item["update_at"] = datetime.now()
+        item["update_at"] = datetime.utcnow()
         return item
 
-    def equipment_info(self, item):
+    def equipment_info(self, result, item):
         print("获取用户装备信息...")
-        item["update_at"] = datetime.now()
+        item["update_at"] = datetime.utcnow()
 
         return item
 
@@ -106,30 +107,30 @@ class HunterPipeline(object):
         item["pet"] = [i['name']
                        for i in result['data']['additional_data']['pet']]
         item["petSummary"] = result['data']['additional_data']['petSummary']['adventureCount']
-        item["update_at"] = datetime.now()
+        item["update_at"] = datetime.utcnow()
         return item
 
     def homeland_info(self, result, item):
         print("获取用户家园信息...")
-        item["update_at"] = datetime.now()
+        item["update_at"] = datetime.utcnow()
         item["homelandLevel"] = result['data']['additional_data']['homeland']['level']
         return item
 
     def adventure_info(self, result, item):
         print("获取用户奇遇信息...")
-        item["update_at"] = datetime.now()
+        item["update_at"] = datetime.utcnow()
         item['adventure'] = [i['name']
                              for i in result['data']['additional_data']['adventure']]
         return item
 
     def other_info(self, result, item):
         print("获取用户其它信息...")
-        item["update_at"] = datetime.now()
+        item["update_at"] = datetime.utcnow()
         return item
 
     def appearance_info(self, result, item):
         print('获取用户外观信息...')
-        item["update_at"] = datetime.now()
+        item["update_at"] = datetime.utcnow()
 
         item["back"] = [i['name']
                         for i in result['data']['additional_data']['appearance']['back']]
